@@ -110,11 +110,11 @@ void cleanupLogger() {
 
     #if SHOULD_DUMP //safely close dump file
 
-        //terminate thread
-        atomic_store(&terminateFlushThread, true);
-        pthread_join(logger.flushing, NULL);
-
-        if(logger.dump != NULL) {
+       if(logger.dump != NULL) {
+            
+            //terminate thread
+            atomic_store(&terminateFlushThread, true);
+            pthread_join(logger.flushing, NULL);
 
             if(fclose(logger.dump) != 0) {
 
