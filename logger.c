@@ -99,8 +99,8 @@ void initLogger() {
                 }
             }
         }
-
-        pthread_create(&logger.flushing, NULL, flushThread, NULL);
+        else
+            pthread_create(&logger.flushing, NULL, flushThread, NULL);
 
     #endif
 
