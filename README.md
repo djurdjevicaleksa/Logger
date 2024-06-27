@@ -61,12 +61,3 @@ Since the logger is meant for multi-threaded environments the logger must be uni
 **extern Logger logger;**
 
 You can then call its functions using the dot operator.
-
-# Known bugs
-The library currently has a problem parsing -D arguments and therefore data dumping and time stamping cannot be enabled.
-
-
-
-
-
-
