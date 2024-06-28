@@ -1,6 +1,6 @@
-﻿# Logger
+﻿# C/C++ Logger
 
-This is a simple, thread-safe, lightweight library that implements logging functionalities in C. Lots of things can be customized to better suit your environment or needs.
+This is a simple, thread-safe, lightweight library that implements logging functionalities in C/C++. Lots of things can be customized to better suit your environment or needs.
 
 # Features
 This logger includes **multiple logging levels** for different types of messages:
