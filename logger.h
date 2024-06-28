@@ -26,11 +26,11 @@
 
 //////// CONFIGURABLE ////////
 #ifndef SHOULD_DUMP
-    #define SHOULD_DUMP true
+    #define SHOULD_DUMP false
 #endif
 
 #ifndef SHOULD_TIMESTAMP
-    #define SHOULD_TIMESTAMP true
+    #define SHOULD_TIMESTAMP false
 #endif
 
 #ifndef DUMP_FILENAME
