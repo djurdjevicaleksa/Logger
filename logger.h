@@ -26,11 +26,11 @@
 
 //////// CONFIGURABLE ////////
 #ifndef SHOULD_DUMP
-    #define SHOULD_DUMP false
+    #define SHOULD_DUMP true
 #endif
 
 #ifndef SHOULD_TIMESTAMP
-    #define SHOULD_TIMESTAMP false
+    #define SHOULD_TIMESTAMP true
 #endif
 
 #ifndef DUMP_FILENAME
@@ -77,6 +77,10 @@
 
 //////////////////////////////
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void (*loggerFunction)(const char* message);
 
 typedef struct {
@@ -85,10 +89,6 @@ typedef struct {
     loggerFunction  logWarning;
     loggerFunction  logError;
     loggerFunction  logCriticalError;
-    pthread_mutex_t _mutex;
-    time_t          _timestamp;
-    FILE* dump;
-    pthread_t flushing;
 
 } Logger;
 
@@ -102,8 +102,13 @@ void loggerCriticalFunction(const char*);
 void initLogger();
 void cleanupLogger();
 
-void* flushThread();
+void* flushThread(void*);
 
 void setCustomLoggerFunctions(loggerFunction, loggerFunction,
                 loggerFunction, loggerFunction);
+
+
+#ifdef __cplusplus
+}
+#endif
 

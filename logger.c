@@ -1,25 +1,32 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <stdatomic.h>
 
 #include "logger.h"
 
 Logger logger;
-static atomic_bool terminateFlushThread = false;
+
+static int terminateFlushThread = false;
+
+static pthread_mutex_t _logger_mutex;
+static pthread_mutex_t _flush_mutex;
+
+static time_t _timestamp;
+static FILE* _dump;
+static pthread_t _flushing;
 
 void loggerFunctionTemplate(const char* format, const char* formatColour, const char* message, FILE* consoleOutputStream) {
 
-    pthread_mutex_lock(&logger._mutex);
+    pthread_mutex_lock(&_logger_mutex);
 
     char stdBuffer[OUTPUT_BUFFER_LEN];
     char dumpBuffer[OUTPUT_BUFFER_LEN];
 
     #if SHOULD_TIMESTAMP
 
-        time(&logger._timestamp);
-        snprintf(stdBuffer, OUTPUT_BUFFER_LEN - 1, formatColour, ctime(&logger._timestamp), message);
-        snprintf(dumpBuffer, OUTPUT_BUFFER_LEN - 1, format, ctime(&logger._timestamp), message);
+        time(&_timestamp);
+        snprintf(stdBuffer, OUTPUT_BUFFER_LEN - 1, formatColour, ctime(&_timestamp), message);
+        snprintf(dumpBuffer, OUTPUT_BUFFER_LEN - 1, format, ctime(&_timestamp), message);
 
     #else
 
@@ -32,15 +39,15 @@ void loggerFunctionTemplate(const char* format, const char* formatColour, const 
 
     #if SHOULD_DUMP //dump to file
 
-        if(logger.dump != NULL) {
+        if(_dump != NULL) {
 
-            fprintf(logger.dump, "%s", dumpBuffer);
+            fprintf(_dump, "%s", dumpBuffer);
         }
 
     #endif
 
 
-    pthread_mutex_unlock(&logger._mutex);
+    pthread_mutex_unlock(&_logger_mutex);
 }
 
 void loggerInfoFunction(const char* info) {
@@ -70,13 +77,14 @@ void initLogger() {
     logger.logError = loggerErrorFunction;
     logger.logCriticalError = loggerCriticalFunction;
 
-    pthread_mutex_init(&logger._mutex, NULL);
+    pthread_mutex_init(&_logger_mutex, NULL);
+    pthread_mutex_init(&_flush_mutex, NULL);
 
     #if SHOULD_DUMP //safely open dump file
 
-        logger.dump = fopen(DUMP_FILENAME, "a");
+        _dump = fopen(DUMP_FILENAME, "a");
 
-        if(logger.dump == NULL) {
+        if(_dump == NULL) {
 
             switch(errno) {
 
@@ -100,7 +108,7 @@ void initLogger() {
             }
         }
         else
-            pthread_create(&logger.flushing, NULL, flushThread, NULL);
+            pthread_create(&_flushing, NULL, flushThread, NULL);
 
     #endif
 
@@ -110,13 +118,16 @@ void cleanupLogger() {
 
     #if SHOULD_DUMP //safely close dump file
 
-       if(logger.dump != NULL) {
+       if(_dump != NULL) {
             
             //terminate thread
-            atomic_store(&terminateFlushThread, true);
-            pthread_join(logger.flushing, NULL);
+            pthread_mutex_lock(&_flush_mutex);
+            terminateFlushThread = true;
+            pthread_mutex_unlock(&_flush_mutex);
 
-            if(fclose(logger.dump) != 0) {
+            pthread_join(_flushing, NULL);
+
+            if(fclose(_dump) != 0) {
 
                 switch(errno) {
 
@@ -137,14 +148,19 @@ void cleanupLogger() {
 
     #endif
 
-    pthread_mutex_destroy(&logger._mutex);
+    pthread_mutex_destroy(&_logger_mutex);
+    pthread_mutex_destroy(&_flush_mutex);
 }
 
-void* flushThread() {
+void* flushThread(void* arg) {
 
-    while(atomic_load(&terminateFlushThread) == false) {
+    pthread_mutex_lock(&_flush_mutex);
 
-        if(fflush(logger.dump) != 0) {
+    while(terminateFlushThread == false) {
+
+        pthread_mutex_unlock(&_flush_mutex);
+
+        if(fflush(_dump) != 0) {
 
             switch(errno) {
 
@@ -163,7 +179,11 @@ void* flushThread() {
         }
 
         usleep(FLUSHING_INTERVAL * SECOND);
+
+        pthread_mutex_lock(&_flush_mutex);
     }
+
+    pthread_mutex_unlock(&_flush_mutex);
 
     return NULL;
 }
