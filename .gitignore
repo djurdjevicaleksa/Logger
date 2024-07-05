@@ -1,5 +1,5 @@
 .vscode/
-logger.txt
+*.txt
 *.d
 *.o
 log

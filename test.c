@@ -1,7 +1,8 @@
-#include "logger.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+
+#include "logger.h"
 
 int main() {
 
@@ -13,6 +14,10 @@ int main() {
     logger.logInfo("Info message!");
 
     logger.log(LOG_WARNING, COLOUR_RED, "Issa %s of da month!", "first");
+
+    usleep(3 * SECOND);
+
+    logger.logInfo("Info message!");
 
     cleanupLogger();
 

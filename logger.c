@@ -6,12 +6,6 @@
 
 #include "logger.h"
 
-
-/*
-    TODO
-    --napraviti drugaciji sistem za biranje boja koji omogucava dodavanje boje i njene vrednosti u neku mapu, tako da se samo tu dodaju boje
-*/
-
 Logger logger;
 
 static int terminateFlushThread = false;
