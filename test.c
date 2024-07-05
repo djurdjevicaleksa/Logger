@@ -10,21 +10,10 @@ int main() {
     //initialize the library
     initLogger();
 
-    logger.logInfo("info");
+    logger.logInfo("Info message!");
 
-    usleep(SECOND);
+    logger.log(LOG_WARNING, COLOUR_RED, "Issa %s of da month!", "first");
 
-    logger.logWarning("warning");
-
-    usleep(SECOND);
-
-    logger.logError("error");
-
-    usleep(SECOND);
-
-    logger.logCriticalError("critical");
-
-    //terminate the library
     cleanupLogger();
 
     return 0;
