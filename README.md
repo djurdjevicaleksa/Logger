@@ -13,14 +13,9 @@ It supports **colorful text output** to the stdout and stderr streams. Colours *
 
 You can **override its functions** to change the behaviour to better suit your needs. To override, use `setCustomLoggerFunctions`.
 
-You can **enable file output**, as well as **time stamping**. To enable or disable this feature, you need to use one or more of the following flags during compilation:
-* -DSHOULD_DUMP=N, where N is true or false
-* -DSHOULD_TIMESTAMP=M, where M is true or false
-* -DDUMP_FILENAME="\\"FILENAME.EXT\\"", where FILENAME is the name of the dump file and the path to it and EXT is the appropriate file extension
+You can **enable file output**, as well as **time stamping**. To enable or disable these features, open `config.h`.
 
-To change **dump file flushing cooldown period or output buffer size**, provide one or more of the following flags during compilation:
-* -DFLUSHING_INTERVAL=N, where N is the number of seconds
-* -DOUTPUT_BUFFER_LEN=M, where M is the number of bytes
+To change **dump file flushing cooldown period or output buffer size**, open `config.h`.
  
 File output and time stamping are **off by default** and the default dump file is called `logger.txt` which will be inside the current directory. If you want to put it elsewhere, **enter a relative path** to where you want it to be.
 
@@ -29,8 +24,6 @@ File output and time stamping are **off by default** and the default dump file i
 
 
 ## Data dumping
-
-If enabled, dumps console output into a file specified by the -DDUMP_FILENAME flag. Logs are appended at the end of previous ones.
 
 To reduce overhead, output file is opened only once, during `initLogger`and a separate thread is responsible for making sure logs are physically written to the file in a timely fashion to prevent data loss due to a critical program failure. The thread is terminated during `cleanupLogger`.
 
@@ -48,15 +41,17 @@ Logging functions:
 * `logger.logWarning` - Writes a warning to the output stream and, if enabled, dumps it into the dump file.
 * `logger.logError` - Writes an error to the output stream and, if enabled, dumps it into the dump file.
 * `logger.logCriticalError` - Writes a critical error to the output stream and, if enabled, dumps it into the dump file.
+* `logger.log` - Write a custom log with a specified level, colour, format and parameters.
 
-To use custom functions, call `setCustomLoggerFunctions`.
+To override these functions, call `setCustomLoggerFunctions`.
+
 
 # Building and running
 ## Building
-This library uses a thread for data dump flushing and for mutexes and **therefore the binary needs to be compiled with the -lpthread flag**. The intended to build this library is **static**. When compiling the `logger.c` into a `.o` file, specify flags previously mentioned for enabling or disabling features such as time stamping or data dumping.
+This library uses a thread for data dump flushing and for mutexes and **therefore the binary needs to be compiled with the -lpthread flag**. The intended to build this library is **static**.
 
 ## Running
-Since the logger is meant for multi-threaded environments the logger must be unique and it is defined in its `.c` file. You just need to link your reference to it, meaning you need the following line in your program's source code:
+Since the logger is meant for multi-threaded environments the logger must be unique and it is defined in its `.c` file. For that reason, define your reference to it in your code as **external**:
 
 **extern Logger logger;**
 
